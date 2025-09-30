@@ -1,1 +1,1 @@
-"__pycache__/\nvenv/\n.venv/\n.env\nbuild/\ndist/\n*.egg-info/\n.pytest_cache/\n.coverage\n.idea/\n.vscode/\n.DS_Store"
+"__pycache__/\nvenv/\n.venv/\n.env\nbuild/\ndist/\n*.egg-info/\n.pytest_cache/\n.coverage\n.idea/\n.vscode/\n.DS_Store\n.mypy_cache/\n*.log"
