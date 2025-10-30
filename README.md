@@ -1,6 +1,6 @@
 # integration_code: Cross-Chain Bridge Event Listener Simulation
 
-This repository contains a Python script that simulates a critical component of a cross-chain bridge: the event listener and transaction relayer. It is designed to demonstrate a robust, architecturally sound approach to monitoring events on a source blockchain and simulating corresponding actions on a destination blockchain.
+This repository contains a Python script that simulates a critical component of a cross-chain bridge: the event listener and transaction relayer. It is designed to demonstrate a modular and maintainable approach to monitoring events on a source blockchain and simulating corresponding actions on a destination blockchain.
 
 ## Concept
 
@@ -30,7 +30,7 @@ The script is designed with a modular, class-based architecture to separate conc
 -   **`TransactionRelayer`**: A class that simulates the action on the destination chain. It:
     -   Connects to the destination blockchain.
     -   Uses a (dummy) private key to create a relayer account object.
-    -   Takes the parsed event data from the source chain.
+    -   Accepts the parsed event data from the source chain.
     -   Builds a corresponding `unlockTokens` transaction, including fetching the correct nonce and estimating gas.
     -   **Simulates** the signing and sending of the transaction by logging the transaction payload to the console instead of broadcasting it to the network.
 
@@ -40,7 +40,7 @@ The script is designed with a modular, class-based architecture to separate conc
 
 The listener operates in a continuous loop with the following steps:
 
-1.  **Initialization**: The `CrossChainBridgeListener` is instantiated. It creates a `ChainEventListener` instance for the source chain (e.g., Ethereum Sepolia) and a `TransactionRelayer` instance for the destination chain (e.g., Polygon Mumbai).
+1.  **Initialization**: The `CrossChainBridgeListener` is instantiated. It creates a `ChainEventListener` instance for the source chain (e.g., the Ethereum Sepolia testnet) and a `TransactionRelayer` instance for the destination chain (e.g., the Polygon Mumbai testnet).
 
 2.  **State Check**: In its main `run()` loop, the listener first determines the range of blocks it needs to scan. On its first run, it starts from the current latest block. On subsequent runs, it starts from the last block it successfully processed (`last_processed_block + 1`).
 
@@ -58,7 +58,7 @@ The listener operates in a continuous loop with the following steps:
 
 7.  **Wait**: The listener then pauses for a configured interval (`scan_interval_seconds`) before starting the loop again from step 2. This prevents spamming the RPC node with requests.
 
-## Usage Example
+## Usage
 
 ### 1. Prerequisites
 
@@ -70,7 +70,7 @@ The listener operates in a continuous loop with the following steps:
 Clone the repository and set up a virtual environment.
 
 ```bash
-# Clone the repo (or create the files)
+# Clone the repository
 git clone https://github.com/your-username/integration_code.git
 cd integration_code
 
@@ -82,6 +82,12 @@ source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
 pip install -r requirements.txt
 ```
 
+The `requirements.txt` file should contain the following packages:
+```
+web3
+python-dotenv
+```
+
 ### 3. Configuration
 
 The script uses a `.env` file to manage configuration. Create a file named `.env` in the root of the project and add the following content. You can use the provided public RPC URLs or replace them with your own (e.g., from Infura or Alchemy).
@@ -89,16 +95,16 @@ The script uses a `.env` file to manage configuration. Create a file named `.env
 ```ini
 # .env file
 
-# RPC URL for the source chain (e.g., Ethereum Sepolia Testnet)
+# RPC URL for the source chain (e.g., the Ethereum Sepolia testnet)
 SOURCE_CHAIN_RPC="https://rpc.sepolia.org"
 
-# Address of the bridge contract on the source chain
-SOURCE_BRIDGE_CONTRACT="0x2E64f14a5A8A4B5d5f24248552179659a221295a"
+# Address of the bridge contract on the source chain (example address)
+SOURCE_BRIDGE_CONTRACT="0x2E64f14a5A4B5d5f24248552179659a221295a"
 
-# RPC URL for the destination chain (e.g., Polygon Mumbai Testnet)
+# RPC URL for the destination chain (e.g., the Polygon Mumbai testnet)
 DESTINATION_CHAIN_RPC="https://rpc-mumbai.maticvigil.com"
 
-# Address of the bridge contract on the destination chain
+# Address of the bridge contract on the destination chain (example address)
 DESTINATION_BRIDGE_CONTRACT="0x5bF9e5915d319A5333Ab15093111812a149a842c"
 
 # IMPORTANT: This is a dummy private key for simulation only.
@@ -123,19 +129,19 @@ The script will start, connect to the chains, and begin scanning for new blocks.
 2023-10-27 14:30:01 - INFO - [BridgeListener] - Connecting to Ethereum_Sepolia at https://rpc.sepolia.org...
 2023-10-27 14:30:02 - INFO - [BridgeListener] - Successfully connected to Ethereum_Sepolia. Chain ID: 11155111
 2023-10-27 14:30:02 - INFO - [BridgeListener] - Relayer connecting to Polygon_Mumbai at https://rpc-mumbai.maticvigil.com...
-2023-10-27 14:30:04 - INFO - [BridgeListener] - Successfully connected relayer to Polygon_Mumbai. Relayer address: 0x... 
+2023-10-27 14:30:04 - INFO - [BridgeListener] - Successfully connected relayer to Polygon_Mumbai. Relayer address: 0x...
 2023-10-27 14:30:04 - INFO - [BridgeListener] - Starting main event loop. Press Ctrl+C to stop.
 2023-10-27 14:30:05 - INFO - [BridgeListener] - Initial run. Setting start block to 4567890.
 2023-10-27 14:30:05 - INFO - [Ethereum_Sepolia] - Scanning for 'TokensLocked' events from block 4567891 to 4567895.
 ...
 # If an event is found, you will see:
 2023-10-27 14:30:25 - INFO - [Ethereum_Sepolia] - Found 1 'TokensLocked' event(s) in the specified range.
-2023-10-27 14:30:25 - INFO - [BridgeListener] - Processing 'TokensLocked' event from transaction 0x... 
+2023-10-27 14:30:25 - INFO - [BridgeListener] - Processing 'TokensLocked' event from transaction 0x...
 2023-10-27 14:30:25 - INFO - [Relayer] - Preparing 'unlockTokens' transaction for recipient 0x... with amount 100000000.
-2023-10-27 14:30:26 - INFO - [BridgeListener] - --- SIMULATION: Transaction would be sent --- 
+2023-10-27 14:30:26 - INFO - [BridgeListener] - --- SIMULATION: Transaction would be sent ---
 2023-10-27 14:30:26 - INFO - [BridgeListener] -     To: 0x5bF9e5915d319A5333Ab15093111812a149a842c
 2023-10-27 14:30:26 - INFO - [BridgeListener] -     From: 0x... (Relayer Address)
 2023-10-27 14:30:26 - INFO - [BridgeListener] -     Nonce: 42
 2023-10-27 14:30:26 - INFO - [BridgeListener] -     Data: 0x... (Hex-encoded function call)
-2023-10-27 14:30:26 - INFO - [BridgeListener] - --- END SIMULATION --- 
+2023-10-27 14:30:26 - INFO - [BridgeListener] - --- END SIMULATION ---
 ```
