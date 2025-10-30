@@ -14,35 +14,41 @@ This script simulates steps 2 and 3 of this process.
 
 ## Code Architecture
 
-The script is designed with a modular, class-based architecture to separate concerns and improve maintainability.
+The code is structured using a modular, class-based architecture to separate concerns and enhance maintainability.
 
 -   **`script.py`**: The main entry point of the application.
+    ```python
+    # script.py (simplified entry point)
+    if __name__ == "__main__":
+        listener = CrossChainBridgeListener()
+        listener.run()
+    ```
 
--   **`CrossChainBridgeListener`**: The main orchestrator class. It initializes and manages the components for both chains and contains the primary execution loop. It is responsible for determining which blocks to scan and passing found events to the processing logic.
+-   **`CrossChainBridgeListener`**: The main orchestrator class. It initializes and manages the other components and contains the primary execution loop. It is responsible for determining which blocks to scan and passing found events to the processing logic.
 
--   **`ChainEventListener`**: A reusable class responsible for all interactions with a single blockchain. It handles:
+-   **`ChainEventListener`**: A reusable class responsible for interacting with a single blockchain. It handles:
     -   Connecting to a blockchain node via an RPC URL.
     -   Instantiating a `web3.py` contract object.
     -   Fetching the latest block number.
     -   Scanning a given range of blocks for specific smart contract events.
     -   Basic connection error handling and retries.
 
--   **`TransactionRelayer`**: A class that simulates the action on the destination chain. It:
+-   **`TransactionRelayer`**: A class that simulates the corresponding action on the destination chain. It:
     -   Connects to the destination blockchain.
     -   Uses a (dummy) private key to create a relayer account object.
-    -   Accepts the parsed event data from the source chain.
+    -   Processes the parsed event data from the source chain.
     -   Builds a corresponding `unlockTokens` transaction, including fetching the correct nonce and estimating gas.
     -   **Simulates** the signing and sending of the transaction by logging the transaction payload to the console instead of broadcasting it to the network.
 
 -   **Configuration**: All key parameters (RPC URLs, contract addresses, etc.) are managed via environment variables using the `python-dotenv` library, which is a best practice for separating configuration from code.
 
-## How it Works
+## How It Works
 
 The listener operates in a continuous loop with the following steps:
 
 1.  **Initialization**: The `CrossChainBridgeListener` is instantiated. It creates a `ChainEventListener` instance for the source chain (e.g., the Ethereum Sepolia testnet) and a `TransactionRelayer` instance for the destination chain (e.g., the Polygon Mumbai testnet).
 
-2.  **State Check**: In its main `run()` loop, the listener first determines the range of blocks it needs to scan. On its first run, it starts from the current latest block. On subsequent runs, it starts from the last block it successfully processed (`last_processed_block + 1`).
+2.  **State Check**: In its main `run()` loop, the listener first determines the range of blocks it needs to scan. On its first run, it starts from the latest block on the chain. On subsequent runs, it starts from the last block it successfully processed (`last_processed_block + 1`).
 
 3.  **Block Scanning**: It calls the `scan_for_events` method of the `ChainEventListener`, passing the calculated block range. This method queries the source chain's RPC node for any `TokensLocked` events that occurred within those blocks.
 
@@ -83,7 +89,7 @@ pip install -r requirements.txt
 ```
 
 The `requirements.txt` file should contain the following packages:
-```
+```txt
 web3
 python-dotenv
 ```
@@ -99,7 +105,7 @@ The script uses a `.env` file to manage configuration. Create a file named `.env
 SOURCE_CHAIN_RPC="https://rpc.sepolia.org"
 
 # Address of the bridge contract on the source chain (example address)
-SOURCE_BRIDGE_CONTRACT="0x2E64f14a5A4B5d5f24248552179659a221295a"
+SOURCE_BRIDGE_CONTRACT="0x2E64f14a5A4B5d5f24248552179659a221295a0"
 
 # RPC URL for the destination chain (e.g., the Polygon Mumbai testnet)
 DESTINATION_CHAIN_RPC="https://rpc-mumbai.maticvigil.com"
